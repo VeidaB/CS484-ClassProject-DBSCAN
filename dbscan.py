@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-# --- Dataset ---
+# Dataset 
 # To run on a different dataset, replace this section so it defines:
 #   X       : ndarray of shape (n, d), one observation per row
 #   eps     : float, neighborhood radius
@@ -34,7 +34,7 @@ eps = 0.25
 min_pts = 4
 
 
-# --- DBSCAN Algorithm ---
+#  DBSCAN Algorithm 
 
 UNCLASSIFIED = -2
 NOISE = -1
@@ -85,7 +85,7 @@ def dbscan(X, eps, min_pts):
     return c
 
 
-# --- Execution & Visualization ---
+# Execution & Visualization 
 
 c = dbscan(X, eps=eps, min_pts=min_pts)
 
