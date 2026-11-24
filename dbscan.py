@@ -3,6 +3,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.datasets import make_moons
 
 
 # --- Dataset ---
@@ -11,23 +12,7 @@ import matplotlib.pyplot as plt
 #   eps     : float, neighborhood radius
 #   min_pts : int, minimum neighborhood size for a core point
 
-def two_moons(n, n_outliers, seed):
-    """Generate two interleaved half-moons with uniform background outliers."""
-    np.random.seed(seed)
-    t = np.pi * np.random.rand(n // 2)
-    X = np.r_[np.c_[np.cos(t), np.sin(t)],
-              np.c_[1 - np.cos(t), 0.5 - np.sin(t)]]
-    X = X + 0.1 * np.random.randn(*X.shape)
-
-    # Sample uniform outliers within a padded bounding box around the moons.
-    lo = X.min(axis=0) - 0.5
-    hi = X.max(axis=0) + 0.5
-    outliers = lo + (hi - lo) * np.random.rand(n_outliers, 2)
-    return np.r_[X, outliers]
-
-
-X = two_moons(n=300, n_outliers=20, seed=0)
-X = (X - X.mean(axis=0)) / X.std(axis=0)  # Standardize features so eps is scale-consistent
+X, y = make_moons(n_samples = 300, noise = 0.08, random_state = 42)
 print(f"{X.shape=}")
 
 eps = 0.25
@@ -36,25 +21,26 @@ min_pts = 4
 
 # --- DBSCAN Algorithm ---
 
-UNCLASSIFIED = -2
+UNCLASSIFIED = -2 #for points that have not been assigned a cluster
 NOISE = -1
 
 
-def region_query(X, i, eps):
-    """Return indices of all points in X within Euclidean distance eps of X[i] (inclusive)."""
-    d = np.sqrt(np.sum((X - X[i]) ** 2, axis=1))
+def region_query(X, point, eps):
+    """Return indices of all points in X within Euclidean distance eps of X[point] (inclusive)."""
+    d = np.sqrt(np.sum((X - X[point]) ** 2, axis=1))
     return np.where(d <= eps)[0]
 
 
-def expand_cluster(X, c, i, cluster_id, eps, min_pts):
-    """Expand a new cluster from X[i] in place; return True if X[i] is a core point."""
-    seeds = list(region_query(X, i, eps))
+def expand_cluster(X, c, point, cluster_id, eps, min_pts):
+    """Expand a new cluster from X[i] in place; return True if X[point] is a core point."""
+    seeds = list(region_query(X, point, eps)) #list of given point's neighbors
+
     if len(seeds) < min_pts:
-        c[i] = NOISE  # May later be reassigned as a border point of another cluster
+        c[point] = NOISE  # May later be reassigned as a border point of another cluster
         return False
 
     c[seeds] = cluster_id
-    seeds.remove(i)
+    seeds.remove(point)
 
     # Breadth-first expansion over all density-reachable points.
     while len(seeds) > 0:
