@@ -32,7 +32,7 @@ def region_query(X, point, eps):
 
 
 def expand_cluster(X, c, point, cluster_id, eps, min_pts):
-    """Expand a new cluster from X[i] in place; return True if X[point] is a core point."""
+    """Expand a new cluster from X[point] in place; return True if X[point] is a core point."""
     seeds = list(region_query(X, point, eps)) #list of given point's neighbors
 
     if len(seeds) < min_pts:
@@ -49,7 +49,7 @@ def expand_cluster(X, c, point, cluster_id, eps, min_pts):
         if len(neighbors) >= min_pts:
             for q in neighbors:
                 if c[q] == UNCLASSIFIED or c[q] == NOISE:
-                    # Only unclassified points can be core points; prior NOISE points are border points.
+                    # NOISE points already failed the core test and become border points
                     if c[q] == UNCLASSIFIED:
                         seeds.append(q)
                     c[q] = cluster_id
